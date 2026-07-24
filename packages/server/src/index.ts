@@ -42,8 +42,10 @@ const nmConfig = {
 const nmServer = new NodeMediaServer(nmConfig);
 
 nmServer.on("prePublish", (id: string, streamPath: string) => {
-  const streamKey = streamPath.split("/").pop() || "unknown";
-  console.log(`[RTMP] Stream started: ${streamKey} (id: ${id})`);
+  // streamPath format: /live/{streamKey}
+  const parts = streamPath.split("/").filter(Boolean);
+  const streamKey = parts[parts.length - 1] || "live";
+  console.log(`[RTMP] Stream started: ${streamKey} (path: ${streamPath}, id: ${id})`);
 
   streams.set(streamKey, {
     streamKey,

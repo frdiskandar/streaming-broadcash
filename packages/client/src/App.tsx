@@ -4,74 +4,97 @@ import Player from "./components/Player";
 interface Stream {
   streamKey: string;
   isLive: boolean;
-  viewerCount: number;
-  startedAt: number;
 }
 
-const WS_HOST = `ws://${window.location.hostname}:8081`;
-
 export default function App() {
-  const [streams, setStreams] = useState<Stream[]>([]);
-  const [selectedStream, setSelectedStream] = useState<string | null>(null);
+  const [activeStream, setActiveStream] = useState<Stream | null>(null);
+  const [checking, setChecking] = useState(true);
 
   useEffect(() => {
-    fetchStreams();
-    const interval = setInterval(fetchStreams, 5000);
+    checkStream();
+    const interval = setInterval(checkStream, 3000);
     return () => clearInterval(interval);
   }, []);
 
-  async function fetchStreams() {
+  async function checkStream() {
     try {
       const res = await fetch("/api/streams");
       const data = await res.json();
-      setStreams(data.streams);
+      const live = data.streams.find((s: Stream) => s.isLive);
+      if (live) {
+        setActiveStream(live);
+      } else {
+        setActiveStream(null);
+      }
     } catch {
-      console.error("Failed to fetch streams");
+      setActiveStream(null);
+    } finally {
+      setChecking(false);
     }
   }
 
-  return (
-    <div style={{ fontFamily: "system-ui, sans-serif", maxWidth: 960, margin: "0 auto", padding: 24 }}>
-      <h1 style={{ fontSize: 24, marginBottom: 16 }}>Stream Broadcast</h1>
-
-      {selectedStream ? (
-        <div>
-          <button onClick={() => setSelectedStream(null)} style={{ marginBottom: 12 }}>
-            Back to stream list
-          </button>
-          <Player streamKey={selectedStream} wsHost={WS_HOST} />
+  if (checking) {
+    return (
+      <div style={containerStyle}>
+        <div style={offlineBoxStyle}>
+          <div style={{ fontSize: 48, marginBottom: 16 }}>&#8987;</div>
+          <p style={{ color: "#999", fontSize: 16 }}>Memeriksa stream...</p>
         </div>
-      ) : streams.length === 0 ? (
-        <p style={{ color: "#666" }}>
-          No live streams. Start streaming from OBS to{" "}
-          <code>rtmp://localhost:1935/live</code> with stream key.
-        </p>
-      ) : (
-        <ul style={{ listStyle: "none", padding: 0 }}>
-          {streams.map((s) => (
-            <li
-              key={s.streamKey}
-              onClick={() => setSelectedStream(s.streamKey)}
-              style={{
-                padding: 16,
-                marginBottom: 8,
-                border: "1px solid #ddd",
-                borderRadius: 8,
-                cursor: "pointer",
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-              }}
-            >
-              <div>
-                <strong>{s.streamKey}</strong>
-                <span style={{ marginLeft: 12, color: "#e53e3e", fontWeight: 600 }}>LIVE</span>
-              </div>
-              <span style={{ color: "#666" }}>{s.viewerCount} viewers</span>
-            </li>
-          ))}
-        </ul>
-      )}
+      </div>
+    );
+  }
+
+  if (!activeStream) {
+    return (
+      <div style={containerStyle}>
+        <div style={offlineBoxStyle}>
+          <div style={{ fontSize: 64, marginBottom: 16, opacity: 0.3 }}>&#9210;</div>
+          <h2 style={{ color: "#555", fontSize: 22, fontWeight: 600, marginBottom: 8 }}>
+            Tidak Ada Siaran
+          </h2>
+          <p style={{ color: "#999", fontSize: 14, lineHeight: 1.6, textAlign: "center", maxWidth: 360 }}>
+            Stream akan muncul secara otomatis saat broadcaster memulai siaran dari OBS ke{" "}
+            <code style={codeStyle}>rtmp://localhost:1935/live</code>
+          </p>
+          <div style={{ marginTop: 24, padding: "8px 16px", background: "#f0f0f0", borderRadius: 6, fontSize: 12, color: "#888" }}>
+            Menunggu siaran...
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div style={containerStyle}>
+      <Player streamKey={activeStream.streamKey} />
     </div>
   );
 }
+
+const containerStyle: React.CSSProperties = {
+  fontFamily: "system-ui, -apple-system, sans-serif",
+  width: "100vw",
+  height: "100vh",
+  margin: 0,
+  padding: 0,
+  background: "#111",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+};
+
+const offlineBoxStyle: React.CSSProperties = {
+  display: "flex",
+  flexDirection: "column",
+  alignItems: "center",
+  justifyContent: "center",
+  padding: 48,
+};
+
+const codeStyle: React.CSSProperties = {
+  background: "#222",
+  color: "#aaa",
+  padding: "2px 6px",
+  borderRadius: 4,
+  fontSize: 13,
+};
