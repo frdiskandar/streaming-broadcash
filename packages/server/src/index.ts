@@ -8,6 +8,7 @@ import db from "./db.js";
 import authRoutes from "./routes/auth.js";
 import userRoutes from "./routes/users.js";
 import streamRoutes from "./routes/streams.js";
+import streamKeyRoutes from "./routes/stream-keys.js";
 import { requireAuth, requireAdmin } from "./middleware/auth.js";
 import { startRtmp } from "./rtmp/index.js";
 import "./ws/index.js";
@@ -47,6 +48,7 @@ app.use(express.json());
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/streams", streamRoutes);
+app.use("/api/stream-keys", streamKeyRoutes);
 
 // --- Admin Dashboard (admin only) ---
 const clientDist = path.resolve(__dirname, "../../client/dist");

@@ -29,6 +29,17 @@ export interface UserProfile {
   createdAt: number;
 }
 
+export interface StreamKey {
+  id: string;
+  key: string;
+  name: string;
+  isActive: boolean;
+  lastUsedAt?: number;
+  createdAt: number;
+}
+
+export type StreamKeyProfile = StreamKey;
+
 export const RTMP_PORT = 1935;
 export const HTTP_PORT = 8080;
 export const WS_PORT = 8081;

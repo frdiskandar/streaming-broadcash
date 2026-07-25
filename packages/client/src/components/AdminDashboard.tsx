@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import UserManagement from "./UserManagement";
+import StreamKeyManagement from "./StreamKeyManagement";
 import { useAuth } from "./AuthContext";
 
 interface Stream {
@@ -57,7 +58,11 @@ export default function AdminDashboard() {
   const [serverStartTime] = useState(Date.now());
   const [lastUpdate, setLastUpdate] = useState(new Date());
 
-  const activeTab = pathname === "/admin/users" ? "users" : "dashboard";
+  const activeTab = pathname === "/admin/users"
+    ? "users"
+    : pathname === "/admin/stream-keys"
+      ? "stream-keys"
+      : "dashboard";
 
   useEffect(() => {
     fetchStreams();
@@ -112,6 +117,16 @@ export default function AdminDashboard() {
             <span className="text-xs opacity-70">&#9775;</span>
             Pengguna
           </a>
+          <a
+            href="/admin/stream-keys"
+            className={`flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm transition-colors ${activeTab === "stream-keys"
+                ? "bg-zinc-800 text-zinc-100"
+                : "text-zinc-400 hover:bg-zinc-800/70 hover:text-zinc-100"
+              }`}
+          >
+            <span className="text-xs opacity-70">&#128273;</span>
+            Stream Keys
+          </a>
         </nav>
 
         <div className="flex items-center gap-3 border-t border-zinc-800 px-5 pt-4">
@@ -138,6 +153,8 @@ export default function AdminDashboard() {
       <main className="ml-60 p-8">
         {activeTab === "users" ? (
           <UserManagement />
+        ) : activeTab === "stream-keys" ? (
+          <StreamKeyManagement />
         ) : (
           <>
             <header className="mb-8 flex items-start justify-between gap-4">

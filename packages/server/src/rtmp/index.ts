@@ -3,6 +3,7 @@ import { fileURLToPath } from "url";
 import NodeMediaServer from "node-media-server";
 import { RTMP_PORT } from "@broadcast/shared";
 import { setStreamLive, setStreamEnded, broadcast } from "../services/stream.service.js";
+import { findStreamKeyByKey, updateLastUsedAt } from "../services/stream-key.service.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -36,7 +37,23 @@ const nmServer = new NodeMediaServer(config);
 nmServer.on("prePublish", (id: string, streamPath: string) => {
   const parts = streamPath.split("/").filter(Boolean);
   const streamKey = parts[parts.length - 1] || "live";
-  console.log(`[RTMP] Stream started: ${streamKey} (path: ${streamPath}, id: ${id})`);
+
+  // Validate stream key against database
+  const keyData = findStreamKeyByKey(streamKey);
+  if (!keyData) {
+    console.log(`[RTMP] Rejected: invalid stream key "${streamKey}" (id: ${id})`);
+    throw new Error("Invalid stream key");
+  }
+
+  if (!keyData.isActive) {
+    console.log(`[RTMP] Rejected: stream key "${streamKey}" is disabled (id: ${id})`);
+    throw new Error("Stream key disabled");
+  }
+
+  // Update last used timestamp
+  updateLastUsedAt(streamKey);
+
+  console.log(`[RTMP] Stream started: ${streamKey} (name: ${keyData.name}, id: ${id})`);
 
   setStreamLive(streamKey);
   broadcast({ type: "stream_start", payload: { streamKey, startedAt: Date.now() } });

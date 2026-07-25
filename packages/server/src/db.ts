@@ -30,4 +30,15 @@ db.exec(`
   )
 `);
 
+db.exec(`
+  CREATE TABLE IF NOT EXISTS stream_keys (
+    id TEXT PRIMARY KEY,
+    key TEXT UNIQUE NOT NULL,
+    name TEXT NOT NULL,
+    is_active INTEGER NOT NULL DEFAULT 1,
+    last_used_at INTEGER,
+    created_at INTEGER NOT NULL
+  )
+`);
+
 export default db;
