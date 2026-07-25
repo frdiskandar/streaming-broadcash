@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import UserManagement from "./UserManagement";
 import StreamKeyManagement from "./StreamKeyManagement";
+import ViewerManagement from "./ViewerManagement";
 import { useAuth } from "./AuthContext";
 
 interface Stream {
@@ -164,7 +165,9 @@ export default function AdminDashboard() {
     ? "users"
     : pathname === "/admin/stream-keys"
       ? "stream-keys"
-      : "dashboard";
+      : pathname === "/admin/viewers"
+        ? "viewers"
+        : "dashboard";
 
   useEffect(() => {
     fetchStreams();
@@ -229,6 +232,16 @@ export default function AdminDashboard() {
             <span className="text-xs opacity-70">&#128273;</span>
             Stream Keys
           </a>
+          <a
+            href="/admin/viewers"
+            className={`flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm transition-colors ${activeTab === "viewers"
+                ? "bg-zinc-800 text-zinc-100"
+                : "text-zinc-400 hover:bg-zinc-800/70 hover:text-zinc-100"
+              }`}
+          >
+            <span className="text-xs opacity-70">&#128101;</span>
+            Viewers
+          </a>
         </nav>
 
         <div className="flex items-center gap-3 border-t border-zinc-800 px-5 pt-4">
@@ -257,6 +270,8 @@ export default function AdminDashboard() {
           <UserManagement />
         ) : activeTab === "stream-keys" ? (
           <StreamKeyManagement />
+        ) : activeTab === "viewers" ? (
+          <ViewerManagement />
         ) : (
           <>
             <header className="mb-8 flex items-start justify-between gap-4">

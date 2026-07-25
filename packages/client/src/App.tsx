@@ -320,7 +320,7 @@ function ViewerApp() {
         )}
       </div>
 
-      <Player streamKey={activeStream.streamKey} />
+      <Player streamKey={activeStream.streamKey} username={user?.username} />
     </div>
   );
 }

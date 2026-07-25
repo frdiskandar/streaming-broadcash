@@ -2,10 +2,12 @@ import { useEffect, useRef, useState } from "react";
 
 interface PlayerProps {
   streamKey: string;
+  username?: string;
 }
 
-export default function Player({ streamKey }: PlayerProps) {
+export default function Player({ streamKey, username }: PlayerProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
+  const wsRef = useRef<WebSocket | null>(null);
   const [status, setStatus] = useState<"connecting" | "playing" | "disconnected">("connecting");
   const [error, setError] = useState<string | null>(null);
   const [viewerCount, setViewerCount] = useState(0);
@@ -15,7 +17,6 @@ export default function Player({ streamKey }: PlayerProps) {
 
   useEffect(() => {
     let flvPlayer: any = null;
-    let ws: WebSocket | null = null;
     let destroyed = false;
 
     async function init() {
@@ -29,9 +30,11 @@ export default function Player({ streamKey }: PlayerProps) {
       }
 
       const wsHost = `ws://${window.location.hostname}:8081`;
-      ws = new WebSocket(`${wsHost}?stream=${streamKey}`);
+      const params = new URLSearchParams({ stream: streamKey });
+      if (username) params.set("username", username);
+      wsRef.current = new WebSocket(`${wsHost}?${params.toString()}`);
 
-      ws.onmessage = (event) => {
+      wsRef.current.onmessage = (event) => {
         const msg = JSON.parse(event.data);
         if (msg.type === "viewer_count" && msg.payload.streamKey === streamKey) {
           setViewerCount(msg.payload.viewerCount);
@@ -41,9 +44,22 @@ export default function Player({ streamKey }: PlayerProps) {
           setError("Siaran telah berakhir");
           flvPlayer?.unload();
         }
+        // Admin controlled volume
+        if (msg.type === "admin_set_volume" && videoRef.current) {
+          const newVolume = msg.payload.volume;
+          videoRef.current.volume = newVolume / 100;
+          setVolume(newVolume);
+          if (newVolume === 0) {
+            videoRef.current.muted = true;
+            setMuted(true);
+          } else if (muted) {
+            videoRef.current.muted = false;
+            setMuted(false);
+          }
+        }
       };
 
-      ws.onerror = () => {};
+      wsRef.current.onerror = () => {};
 
       const isDev = window.location.port === "3000";
       const flvUrl = isDev
@@ -88,7 +104,8 @@ export default function Player({ streamKey }: PlayerProps) {
       destroyed = true;
       flvPlayer?.unload();
       flvPlayer?.detachMediaElement();
-      ws?.close();
+      wsRef.current?.close();
+      wsRef.current = null;
     };
   }, [streamKey]);
 
@@ -102,10 +119,17 @@ export default function Player({ streamKey }: PlayerProps) {
       .catch(() => {});
   }
 
+  function sendVolumeToServer(vol: number) {
+    if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
+      wsRef.current.send(JSON.stringify({ type: "set_volume", payload: { volume: vol } }));
+    }
+  }
+
   function toggleMute() {
     if (!videoRef.current) return;
     videoRef.current.muted = !videoRef.current.muted;
     setMuted(videoRef.current.muted);
+    sendVolumeToServer(videoRef.current.muted ? 0 : volume);
   }
 
   function handleVolumeChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -121,6 +145,7 @@ export default function Player({ streamKey }: PlayerProps) {
       videoRef.current.muted = true;
       setMuted(true);
     }
+    sendVolumeToServer(val);
   }
 
   return (

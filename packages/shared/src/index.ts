@@ -6,8 +6,27 @@ export interface StreamInfo {
   title?: string;
 }
 
+export interface Viewer {
+  id: string;
+  username: string;
+  streamKey: string;
+  volume: number;
+  isWatching: boolean;
+  connectedAt: number;
+  lastActiveAt: number;
+}
+
 export interface WSMessage {
-  type: "stream_start" | "stream_end" | "viewer_count" | "stream_list";
+  type:
+    | "stream_start"
+    | "stream_end"
+    | "viewer_count"
+    | "stream_list"
+    | "viewer_list"
+    | "set_volume"
+    | "admin_set_volume"
+    | "admin_set_all_volume"
+    | "ping";
   payload: unknown;
 }
 
