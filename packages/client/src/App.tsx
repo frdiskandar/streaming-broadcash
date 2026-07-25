@@ -1,12 +1,46 @@
 import { useState, useEffect } from "react";
 import Player from "./components/Player";
+import AdminDashboard from "./components/AdminDashboard";
 
 interface Stream {
   streamKey: string;
   isLive: boolean;
 }
 
+function usePathname() {
+  const [pathname, setPathname] = useState(window.location.pathname);
+
+  useEffect(() => {
+    function onPop() {
+      setPathname(window.location.pathname);
+    }
+    window.addEventListener("popstate", onPop);
+
+    const orig = history.pushState;
+    history.pushState = function (...args) {
+      orig.apply(this, args);
+      setPathname(window.location.pathname);
+    };
+    return () => {
+      window.removeEventListener("popstate", onPop);
+      history.pushState = orig;
+    };
+  }, []);
+
+  return pathname;
+}
+
 export default function App() {
+  const pathname = usePathname();
+
+  if (pathname === "/admin") {
+    return <AdminDashboard />;
+  }
+
+  return <ViewerApp />;
+}
+
+function ViewerApp() {
   const [activeStream, setActiveStream] = useState<Stream | null>(null);
   const [checking, setChecking] = useState(true);
 
