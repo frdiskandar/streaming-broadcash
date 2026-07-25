@@ -1,4 +1,6 @@
 import { useState, useEffect } from "react";
+import UserManagement from "./UserManagement";
+import { useAuth } from "./AuthContext";
 
 interface Stream {
   streamKey: string;
@@ -19,23 +21,42 @@ function formatUptime(ms: number): string {
   return `${seconds}s`;
 }
 
-function formatBytes(bytes: number): string {
-  if (bytes === 0) return "0 B";
-  const k = 1024;
-  const sizes = ["B", "KB", "MB", "GB"];
-  const i = Math.floor(Math.log(bytes) / Math.log(k));
-  return `${parseFloat((bytes / Math.pow(k, i)).toFixed(1))} ${sizes[i]}`;
-}
-
 function formatDuration(startedAt: number): string {
   const elapsed = Date.now() - startedAt;
   return formatUptime(elapsed);
 }
 
+function usePathname() {
+  const [pathname, setPathname] = useState(window.location.pathname);
+
+  useEffect(() => {
+    function onPop() {
+      setPathname(window.location.pathname);
+    }
+    window.addEventListener("popstate", onPop);
+
+    const orig = history.pushState;
+    history.pushState = function (...args) {
+      orig.apply(this, args);
+      setPathname(window.location.pathname);
+    };
+    return () => {
+      window.removeEventListener("popstate", onPop);
+      history.pushState = orig;
+    };
+  }, []);
+
+  return pathname;
+}
+
 export default function AdminDashboard() {
+  const { user, logout } = useAuth();
+  const pathname = usePathname();
   const [streams, setStreams] = useState<Stream[]>([]);
   const [serverStartTime] = useState(Date.now());
   const [lastUpdate, setLastUpdate] = useState(new Date());
+
+  const activeTab = pathname === "/admin/users" ? "users" : "dashboard";
 
   useEffect(() => {
     fetchStreams();
@@ -46,6 +67,10 @@ export default function AdminDashboard() {
   async function fetchStreams() {
     try {
       const res = await fetch("/api/streams");
+      if (res.status === 401 || res.status === 403) {
+        window.location.href = "/";
+        return;
+      }
       const data = await res.json();
       setStreams(data.streams || []);
       setLastUpdate(new Date());
@@ -66,136 +91,160 @@ export default function AdminDashboard() {
         </div>
 
         <nav style={navStyle}>
-          <a href="/admin" style={{ ...navItemStyle, ...navItemActiveStyle }}>
+          <a
+            href="/admin"
+            style={{ ...navItemStyle, ...(activeTab === "dashboard" ? navItemActiveStyle : {}) }}
+          >
             <span style={navIconStyle}>&#9632;</span>
             Dashboard
           </a>
-          <a href="/" style={navItemStyle}>
-            <span style={navIconStyle}>&#9655;</span>
-            Viewer
+          <a
+            href="/admin/users"
+            style={{ ...navItemStyle, ...(activeTab === "users" ? navItemActiveStyle : {}) }}
+          >
+            <span style={navIconStyle}>&#9775;</span>
+            Pengguna
           </a>
         </nav>
 
         <div style={sidebarFooterStyle}>
-          <div style={statusDotStyle} />
-          <span style={{ fontSize: 12, color: "#71717a" }}>Server Online</span>
+          <div style={{ flex: 1 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
+              <div style={statusDotStyle} />
+              <span style={{ fontSize: 12, color: "#71717a" }}>Server Online</span>
+            </div>
+            {user && (
+              <div style={{ fontSize: 11, color: "#52525b", paddingLeft: 16 }}>
+                {user.username} ({user.role})
+              </div>
+            )}
+          </div>
+          <button onClick={logout} style={logoutBtnStyle}>
+            Keluar
+          </button>
         </div>
       </aside>
 
       <main style={mainStyle}>
-        <header style={headerStyle}>
-          <div>
-            <h1 style={titleStyle}>Dashboard</h1>
-            <p style={subtitleStyle}>Monitor siaran dan server Anda</p>
-          </div>
-          <div style={headerRightStyle}>
-            <span style={timestampStyle}>Update: {lastUpdate.toLocaleTimeString("id-ID")}</span>
-          </div>
-        </header>
+        {activeTab === "users" ? (
+          <UserManagement />
+        ) : (
+          <>
+            <header style={headerStyle}>
+              <div>
+                <h1 style={titleStyle}>Dashboard</h1>
+                <p style={subtitleStyle}>Monitor siaran dan server Anda</p>
+              </div>
+              <div style={headerRightStyle}>
+                <span style={timestampStyle}>Update: {lastUpdate.toLocaleTimeString("id-ID")}</span>
+              </div>
+            </header>
 
-        <div style={statsGridStyle}>
-          <div style={statCardStyle}>
-            <div style={statLabelStyle}>Status Siaran</div>
-            <div style={statValueStyle}>
-              <span style={{ color: liveStreams.length > 0 ? "#22c55e" : "#71717a" }}>
-                {liveStreams.length > 0 ? "LIVE" : "OFFLINE"}
-              </span>
-            </div>
-            <div style={statSubStyle}>{liveStreams.length} stream aktif</div>
-          </div>
+            <div style={statsGridStyle}>
+              <div style={statCardStyle}>
+                <div style={statLabelStyle}>Status Siaran</div>
+                <div style={statValueStyle}>
+                  <span style={{ color: liveStreams.length > 0 ? "#22c55e" : "#71717a" }}>
+                    {liveStreams.length > 0 ? "LIVE" : "OFFLINE"}
+                  </span>
+                </div>
+                <div style={statSubStyle}>{liveStreams.length} stream aktif</div>
+              </div>
 
-          <div style={statCardStyle}>
-            <div style={statLabelStyle}>Total Penonton</div>
-            <div style={statValueStyle}>{totalViewers}</div>
-            <div style={statSubStyle}>penonton terhubung</div>
-          </div>
+              <div style={statCardStyle}>
+                <div style={statLabelStyle}>Total Penonton</div>
+                <div style={statValueStyle}>{totalViewers}</div>
+                <div style={statSubStyle}>penonton terhubung</div>
+              </div>
 
-          <div style={statCardStyle}>
-            <div style={statLabelStyle}>Uptime Server</div>
-            <div style={statValueStyle}>{formatUptime(Date.now() - serverStartTime)}</div>
-            <div style={statSubStyle}>sejak server dimulai</div>
-          </div>
+              <div style={statCardStyle}>
+                <div style={statLabelStyle}>Uptime Server</div>
+                <div style={statValueStyle}>{formatUptime(Date.now() - serverStartTime)}</div>
+                <div style={statSubStyle}>sejak server dimulai</div>
+              </div>
 
-          <div style={statCardStyle}>
-            <div style={statLabelStyle}>RTMP Port</div>
-            <div style={{ ...statValueStyle, fontFamily: "'SF Mono', 'Cascadia Code', Consolas, monospace" }}>
-              1935
+              <div style={statCardStyle}>
+                <div style={statLabelStyle}>RTMP Port</div>
+                <div style={{ ...statValueStyle, fontFamily: "'SF Mono', 'Cascadia Code', Consolas, monospace" }}>
+                  1935
+                </div>
+                <div style={statSubStyle}>OBS stream endpoint</div>
+              </div>
             </div>
-            <div style={statSubStyle}>OBS stream endpoint</div>
-          </div>
-        </div>
 
-        <section style={sectionStyle}>
-          <h2 style={sectionTitleStyle}>Siara Aktif</h2>
+            <section style={sectionStyle}>
+              <h2 style={sectionTitleStyle}>Siaran Aktif</h2>
 
-          {liveStreams.length === 0 ? (
-            <div style={emptyStateStyle}>
-              <div style={{ fontSize: 32, marginBottom: 12, opacity: 0.3 }}>&#9210;</div>
-              <p style={{ color: "#71717a", fontSize: 14, margin: 0 }}>
-                Tidak ada siaran aktif saat ini
-              </p>
-              <p style={{ color: "#52525b", fontSize: 12, margin: "8px 0 0" }}>
-                Mulai siaran dari OBS ke rtmp://localhost:1935/live
-              </p>
-            </div>
-          ) : (
-            <div style={tableWrapperStyle}>
-              <table style={tableStyle}>
-                <thead>
-                  <tr>
-                    <th style={thStyle}>Stream Key</th>
-                    <th style={thStyle}>Status</th>
-                    <th style={thStyle}>Penonton</th>
-                    <th style={thStyle}>Durasi</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {liveStreams.map((stream) => (
-                    <tr key={stream.streamKey} style={trStyle}>
-                      <td style={tdStyle}>
-                        <code style={codeStyle}>{stream.streamKey}</code>
-                      </td>
-                      <td style={tdStyle}>
-                        <span style={liveBadgeStyle}>
-                          <span style={liveDotStyle} />
-                          LIVE
-                        </span>
-                      </td>
-                      <td style={{ ...tdStyle, fontFamily: "'SF Mono', 'Cascadia Code', Consolas, monospace" }}>
-                        {stream.viewerCount || 0}
-                      </td>
-                      <td style={{ ...tdStyle, fontFamily: "'SF Mono', 'Cascadia Code', Consolas, monospace" }}>
-                        {stream.startedAt ? formatDuration(stream.startedAt) : "-"}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </section>
+              {liveStreams.length === 0 ? (
+                <div style={emptyStateStyle}>
+                  <div style={{ fontSize: 32, marginBottom: 12, opacity: 0.3 }}>&#9210;</div>
+                  <p style={{ color: "#71717a", fontSize: 14, margin: 0 }}>
+                    Tidak ada siaran aktif saat ini
+                  </p>
+                  <p style={{ color: "#52525b", fontSize: 12, margin: "8px 0 0" }}>
+                    Mulai siaran dari OBS ke rtmp://localhost:1935/live
+                  </p>
+                </div>
+              ) : (
+                <div style={tableWrapperStyle}>
+                  <table style={tableStyle}>
+                    <thead>
+                      <tr>
+                        <th style={thStyle}>Stream Key</th>
+                        <th style={thStyle}>Status</th>
+                        <th style={thStyle}>Penonton</th>
+                        <th style={thStyle}>Durasi</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {liveStreams.map((stream) => (
+                        <tr key={stream.streamKey} style={trStyle}>
+                          <td style={tdStyle}>
+                            <code style={codeStyle}>{stream.streamKey}</code>
+                          </td>
+                          <td style={tdStyle}>
+                            <span style={liveBadgeStyle}>
+                              <span style={liveDotStyle} />
+                              LIVE
+                            </span>
+                          </td>
+                          <td style={{ ...tdStyle, fontFamily: "'SF Mono', 'Cascadia Code', Consolas, monospace" }}>
+                            {stream.viewerCount || 0}
+                          </td>
+                          <td style={{ ...tdStyle, fontFamily: "'SF Mono', 'Cascadia Code', Consolas, monospace" }}>
+                            {stream.startedAt ? formatDuration(stream.startedAt) : "-"}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </section>
 
-        <section style={sectionStyle}>
-          <h2 style={sectionTitleStyle}>Informasi Server</h2>
-          <div style={infoGridStyle}>
-            <div style={infoItemStyle}>
-              <span style={infoLabelStyle}>RTMP Ingest</span>
-              <code style={infoValueStyle}>rtmp://localhost:1935/live</code>
-            </div>
-            <div style={infoItemStyle}>
-              <span style={infoLabelStyle}>HTTP Port</span>
-              <code style={infoValueStyle}>8080</code>
-            </div>
-            <div style={infoItemStyle}>
-              <span style={infoLabelStyle}>WebSocket Port</span>
-              <code style={infoValueStyle}>8081</code>
-            </div>
-            <div style={infoItemStyle}>
-              <span style={infoLabelStyle}>FLV Stream</span>
-              <code style={infoValueStyle}>:10080/live/{'{streamKey}'}.flv</code>
-            </div>
-          </div>
-        </section>
+            <section style={sectionStyle}>
+              <h2 style={sectionTitleStyle}>Informasi Server</h2>
+              <div style={infoGridStyle}>
+                <div style={infoItemStyle}>
+                  <span style={infoLabelStyle}>RTMP Ingest</span>
+                  <code style={infoValueStyle}>rtmp://localhost:1935/live</code>
+                </div>
+                <div style={infoItemStyle}>
+                  <span style={infoLabelStyle}>HTTP Port</span>
+                  <code style={infoValueStyle}>8080</code>
+                </div>
+                <div style={infoItemStyle}>
+                  <span style={infoLabelStyle}>WebSocket Port</span>
+                  <code style={infoValueStyle}>8081</code>
+                </div>
+                <div style={infoItemStyle}>
+                  <span style={infoLabelStyle}>FLV Stream</span>
+                  <code style={infoValueStyle}>:10080/live/{'{streamKey}'}.flv</code>
+                </div>
+              </div>
+            </section>
+          </>
+        )}
       </main>
     </div>
   );
@@ -280,6 +329,17 @@ const statusDotStyle: React.CSSProperties = {
   height: 8,
   borderRadius: "50%",
   background: "#22c55e",
+};
+
+const logoutBtnStyle: React.CSSProperties = {
+  padding: "4px 10px",
+  background: "transparent",
+  border: "1px solid #27272a",
+  borderRadius: 4,
+  color: "#71717a",
+  fontSize: 11,
+  cursor: "pointer",
+  fontFamily: "system-ui, -apple-system, sans-serif",
 };
 
 const mainStyle: React.CSSProperties = {

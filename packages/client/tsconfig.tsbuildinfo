@@ -1,1 +1,1 @@
-{"root":["./src/App.tsx","./src/main.tsx","./src/components/AdminDashboard.tsx","./src/components/Player.tsx"],"version":"5.9.3"}
+{"root":["./src/App.tsx","./src/main.tsx","./src/components/AdminDashboard.tsx","./src/components/AuthContext.tsx","./src/components/LoginPage.tsx","./src/components/Player.tsx","./src/components/UserManagement.tsx"],"version":"5.9.3"}

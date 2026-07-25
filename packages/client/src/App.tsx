@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import Player from "./components/Player";
 import AdminDashboard from "./components/AdminDashboard";
+import LoginPage from "./components/LoginPage";
+import { AuthProvider, useAuth } from "./components/AuthContext";
 
 interface Stream {
   streamKey: string;
@@ -31,16 +33,57 @@ function usePathname() {
 }
 
 export default function App() {
-  const pathname = usePathname();
+  return (
+    <AuthProvider>
+      <AppRoutes />
+    </AuthProvider>
+  );
+}
 
-  if (pathname === "/admin") {
+function AppRoutes() {
+  const pathname = usePathname();
+  const { user, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <div style={loadingStyle}>
+        <div style={{ fontSize: 48, marginBottom: 16 }}>&#8987;</div>
+        <p style={{ color: "#999", fontSize: 16 }}>Memuat...</p>
+      </div>
+    );
+  }
+
+  // Admin routes — admin only
+  if (pathname === "/admin" || pathname.startsWith("/admin/")) {
+    if (!user) return <LoginPage />;
+    if (user.role !== "admin") {
+      return (
+        <div style={loadingStyle}>
+          <div style={{ fontSize: 48, marginBottom: 16, opacity: 0.3 }}>&#128274;</div>
+          <p style={{ color: "#ef4444", fontSize: 16, marginBottom: 8 }}>Akses Ditolak</p>
+          <p style={{ color: "#71717a", fontSize: 14 }}>Anda tidak memiliki akses ke halaman ini</p>
+          <button
+            onClick={() => { window.location.href = "/"; }}
+            style={{ marginTop: 20, padding: "8px 16px", background: "#27272a", border: "none", borderRadius: 6, color: "#e4e4e7", fontSize: 13, cursor: "pointer" }}
+          >
+            Kembali ke Viewer
+          </button>
+        </div>
+      );
+    }
     return <AdminDashboard />;
+  }
+
+  // Viewer — login required
+  if (!user) {
+    return <LoginPage />;
   }
 
   return <ViewerApp />;
 }
 
 function ViewerApp() {
+  const { logout } = useAuth();
   const [activeStream, setActiveStream] = useState<Stream | null>(null);
   const [checking, setChecking] = useState(true);
 
@@ -53,6 +96,10 @@ function ViewerApp() {
   async function checkStream() {
     try {
       const res = await fetch("/api/streams");
+      if (res.status === 401) {
+        logout();
+        return;
+      }
       const data = await res.json();
       const live = data.streams.find((s: Stream) => s.isLive);
       if (live) {
@@ -69,7 +116,7 @@ function ViewerApp() {
 
   if (checking) {
     return (
-      <div style={containerStyle}>
+      <div style={viewerContainerStyle}>
         <div style={offlineBoxStyle}>
           <div style={{ fontSize: 48, marginBottom: 16 }}>&#8987;</div>
           <p style={{ color: "#999", fontSize: 16 }}>Memeriksa stream...</p>
@@ -80,7 +127,7 @@ function ViewerApp() {
 
   if (!activeStream) {
     return (
-      <div style={containerStyle}>
+      <div style={viewerContainerStyle}>
         <div style={offlineBoxStyle}>
           <div style={{ fontSize: 64, marginBottom: 16, opacity: 0.3 }}>&#9210;</div>
           <h2 style={{ color: "#555", fontSize: 22, fontWeight: 600, marginBottom: 8 }}>
@@ -99,22 +146,31 @@ function ViewerApp() {
   }
 
   return (
-    <div style={containerStyle}>
+    <div style={{ width: "100vw", height: "100vh", background: "#000" }}>
       <Player streamKey={activeStream.streamKey} />
     </div>
   );
 }
 
-const containerStyle: React.CSSProperties = {
-  fontFamily: "system-ui, -apple-system, sans-serif",
+const loadingStyle: React.CSSProperties = {
   width: "100vw",
   height: "100vh",
-  margin: 0,
-  padding: 0,
-  background: "#111",
+  display: "flex",
+  flexDirection: "column",
+  alignItems: "center",
+  justifyContent: "center",
+  background: "#0f0f0f",
+  fontFamily: "system-ui, -apple-system, sans-serif",
+};
+
+const viewerContainerStyle: React.CSSProperties = {
+  width: "100vw",
+  height: "100vh",
   display: "flex",
   alignItems: "center",
   justifyContent: "center",
+  background: "#0f0f0f",
+  fontFamily: "system-ui, -apple-system, sans-serif",
 };
 
 const offlineBoxStyle: React.CSSProperties = {
