@@ -22,8 +22,7 @@ function formatUptime(ms: number): string {
 }
 
 function formatDuration(startedAt: number): string {
-  const elapsed = Date.now() - startedAt;
-  return formatUptime(elapsed);
+  return formatUptime(Date.now() - startedAt);
 }
 
 function usePathname() {
@@ -33,6 +32,7 @@ function usePathname() {
     function onPop() {
       setPathname(window.location.pathname);
     }
+
     window.addEventListener("popstate", onPop);
 
     const orig = history.pushState;
@@ -40,6 +40,7 @@ function usePathname() {
       orig.apply(this, args);
       setPathname(window.location.pathname);
     };
+
     return () => {
       window.removeEventListener("popstate", onPop);
       history.pushState = orig;
@@ -79,139 +80,146 @@ export default function AdminDashboard() {
     }
   }
 
-  const totalViewers = streams.reduce((sum, s) => sum + (s.viewerCount || 0), 0);
-  const liveStreams = streams.filter((s) => s.isLive);
+  const totalViewers = streams.reduce((sum, stream) => sum + (stream.viewerCount || 0), 0);
+  const liveStreams = streams.filter((stream) => stream.isLive);
 
   return (
-    <div style={rootStyle}>
-      <aside style={sidebarStyle}>
-        <div style={logoStyle}>
-          <span style={logoIconStyle}>&#9654;</span>
+    <div className="min-h-screen bg-zinc-950 text-zinc-100">
+      <aside className="fixed bottom-0 left-0 top-0 flex w-60 flex-col border-r border-zinc-800 bg-zinc-900/95 py-5">
+        <div className="flex items-center gap-2 border-b border-zinc-800 px-5 pb-5 text-base font-semibold">
+          <span className="text-lg text-emerald-500">&#9654;</span>
           <span>Broadcast</span>
         </div>
 
-        <nav style={navStyle}>
+        <nav className="flex flex-1 flex-col gap-1 px-3 py-4">
           <a
             href="/admin"
-            style={{ ...navItemStyle, ...(activeTab === "dashboard" ? navItemActiveStyle : {}) }}
+            className={`flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm transition-colors ${activeTab === "dashboard"
+                ? "bg-zinc-800 text-zinc-100"
+                : "text-zinc-400 hover:bg-zinc-800/70 hover:text-zinc-100"
+              }`}
           >
-            <span style={navIconStyle}>&#9632;</span>
+            <span className="text-xs opacity-70">&#9632;</span>
             Dashboard
           </a>
           <a
             href="/admin/users"
-            style={{ ...navItemStyle, ...(activeTab === "users" ? navItemActiveStyle : {}) }}
+            className={`flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm transition-colors ${activeTab === "users"
+                ? "bg-zinc-800 text-zinc-100"
+                : "text-zinc-400 hover:bg-zinc-800/70 hover:text-zinc-100"
+              }`}
           >
-            <span style={navIconStyle}>&#9775;</span>
+            <span className="text-xs opacity-70">&#9775;</span>
             Pengguna
           </a>
         </nav>
 
-        <div style={sidebarFooterStyle}>
-          <div style={{ flex: 1 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
-              <div style={statusDotStyle} />
-              <span style={{ fontSize: 12, color: "#71717a" }}>Server Online</span>
+        <div className="flex items-center gap-3 border-t border-zinc-800 px-5 pt-4">
+          <div className="min-w-0 flex-1">
+            <div className="mb-1 flex items-center gap-2">
+              <div className="h-2 w-2 rounded-full bg-emerald-500" />
+              <span className="text-xs text-zinc-400">Server Online</span>
             </div>
             {user && (
-              <div style={{ fontSize: 11, color: "#52525b", paddingLeft: 16 }}>
+              <div className="truncate pl-4 text-[11px] text-zinc-500">
                 {user.username} ({user.role})
               </div>
             )}
           </div>
-          <button onClick={logout} style={logoutBtnStyle}>
+          <button
+            onClick={logout}
+            className="rounded-md border border-zinc-800 px-2.5 py-1 text-[11px] text-zinc-400 transition-colors hover:bg-zinc-800 hover:text-zinc-100"
+          >
             Keluar
           </button>
         </div>
       </aside>
 
-      <main style={mainStyle}>
+      <main className="ml-60 p-8">
         {activeTab === "users" ? (
           <UserManagement />
         ) : (
           <>
-            <header style={headerStyle}>
+            <header className="mb-8 flex items-start justify-between gap-4">
               <div>
-                <h1 style={titleStyle}>Dashboard</h1>
-                <p style={subtitleStyle}>Monitor siaran dan server Anda</p>
+                <h1 className="m-0 text-2xl font-semibold text-zinc-50">Dashboard</h1>
+                <p className="mt-1 text-sm text-zinc-400">Monitor siaran dan server Anda</p>
               </div>
-              <div style={headerRightStyle}>
-                <span style={timestampStyle}>Update: {lastUpdate.toLocaleTimeString("id-ID")}</span>
+              <div className="flex items-center gap-3">
+                <span className="font-mono text-xs text-zinc-500">
+                  Update: {lastUpdate.toLocaleTimeString("id-ID")}
+                </span>
               </div>
             </header>
 
-            <div style={statsGridStyle}>
-              <div style={statCardStyle}>
-                <div style={statLabelStyle}>Status Siaran</div>
-                <div style={statValueStyle}>
-                  <span style={{ color: liveStreams.length > 0 ? "#22c55e" : "#71717a" }}>
+            <div className="mb-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+              <div className="rounded-xl border border-zinc-800 bg-zinc-900 p-5">
+                <div className="mb-2 text-xs uppercase tracking-[0.05em] text-zinc-400">Status Siaran</div>
+                <div className="text-3xl font-semibold leading-none">
+                  <span className={liveStreams.length > 0 ? "text-emerald-500" : "text-zinc-500"}>
                     {liveStreams.length > 0 ? "LIVE" : "OFFLINE"}
                   </span>
                 </div>
-                <div style={statSubStyle}>{liveStreams.length} stream aktif</div>
+                <div className="mt-2 text-xs text-zinc-500">{liveStreams.length} stream aktif</div>
               </div>
 
-              <div style={statCardStyle}>
-                <div style={statLabelStyle}>Total Penonton</div>
-                <div style={statValueStyle}>{totalViewers}</div>
-                <div style={statSubStyle}>penonton terhubung</div>
+              <div className="rounded-xl border border-zinc-800 bg-zinc-900 p-5">
+                <div className="mb-2 text-xs uppercase tracking-[0.05em] text-zinc-400">Total Penonton</div>
+                <div className="text-3xl font-semibold leading-none text-zinc-50">{totalViewers}</div>
+                <div className="mt-2 text-xs text-zinc-500">penonton terhubung</div>
               </div>
 
-              <div style={statCardStyle}>
-                <div style={statLabelStyle}>Uptime Server</div>
-                <div style={statValueStyle}>{formatUptime(Date.now() - serverStartTime)}</div>
-                <div style={statSubStyle}>sejak server dimulai</div>
-              </div>
-
-              <div style={statCardStyle}>
-                <div style={statLabelStyle}>RTMP Port</div>
-                <div style={{ ...statValueStyle, fontFamily: "'SF Mono', 'Cascadia Code', Consolas, monospace" }}>
-                  1935
+              <div className="rounded-xl border border-zinc-800 bg-zinc-900 p-5">
+                <div className="mb-2 text-xs uppercase tracking-[0.05em] text-zinc-400">Uptime Server</div>
+                <div className="text-3xl font-semibold leading-none text-zinc-50">
+                  {formatUptime(Date.now() - serverStartTime)}
                 </div>
-                <div style={statSubStyle}>OBS stream endpoint</div>
+                <div className="mt-2 text-xs text-zinc-500">sejak server dimulai</div>
+              </div>
+
+              <div className="rounded-xl border border-zinc-800 bg-zinc-900 p-5">
+                <div className="mb-2 text-xs uppercase tracking-[0.05em] text-zinc-400">RTMP Port</div>
+                <div className="font-mono text-3xl font-semibold leading-none text-zinc-50">1935</div>
+                <div className="mt-2 text-xs text-zinc-500">OBS stream endpoint</div>
               </div>
             </div>
 
-            <section style={sectionStyle}>
-              <h2 style={sectionTitleStyle}>Siaran Aktif</h2>
+            <section className="mb-8">
+              <h2 className="mb-4 text-base font-semibold text-zinc-200">Siaran Aktif</h2>
 
               {liveStreams.length === 0 ? (
-                <div style={emptyStateStyle}>
-                  <div style={{ fontSize: 32, marginBottom: 12, opacity: 0.3 }}>&#9210;</div>
-                  <p style={{ color: "#71717a", fontSize: 14, margin: 0 }}>
-                    Tidak ada siaran aktif saat ini
-                  </p>
-                  <p style={{ color: "#52525b", fontSize: 12, margin: "8px 0 0" }}>
-                    Mulai siaran dari OBS ke rtmp://localhost:1935/live
-                  </p>
+                <div className="flex flex-col items-center justify-center rounded-xl border border-zinc-800 bg-zinc-900 px-6 py-12 text-center">
+                  <div className="mb-3 text-3xl opacity-30">&#9210;</div>
+                  <p className="m-0 text-sm text-zinc-400">Tidak ada siaran aktif saat ini</p>
+                  <p className="mt-2 text-xs text-zinc-500">Mulai siaran dari OBS ke rtmp://localhost:1935/live</p>
                 </div>
               ) : (
-                <div style={tableWrapperStyle}>
-                  <table style={tableStyle}>
+                <div className="overflow-hidden rounded-xl border border-zinc-800 bg-zinc-900">
+                  <table className="w-full border-collapse">
                     <thead>
                       <tr>
-                        <th style={thStyle}>Stream Key</th>
-                        <th style={thStyle}>Status</th>
-                        <th style={thStyle}>Penonton</th>
-                        <th style={thStyle}>Durasi</th>
+                        <th className="border-b border-zinc-800 px-4 py-3 text-left text-xs font-medium uppercase tracking-[0.05em] text-zinc-400">Stream Key</th>
+                        <th className="border-b border-zinc-800 px-4 py-3 text-left text-xs font-medium uppercase tracking-[0.05em] text-zinc-400">Status</th>
+                        <th className="border-b border-zinc-800 px-4 py-3 text-left text-xs font-medium uppercase tracking-[0.05em] text-zinc-400">Penonton</th>
+                        <th className="border-b border-zinc-800 px-4 py-3 text-left text-xs font-medium uppercase tracking-[0.05em] text-zinc-400">Durasi</th>
                       </tr>
                     </thead>
                     <tbody>
                       {liveStreams.map((stream) => (
-                        <tr key={stream.streamKey} style={trStyle}>
-                          <td style={tdStyle}>
-                            <code style={codeStyle}>{stream.streamKey}</code>
+                        <tr key={stream.streamKey} className="border-b border-zinc-800 last:border-b-0">
+                          <td className="px-4 py-3 text-sm text-zinc-200">
+                            <code className="rounded bg-zinc-800 px-2 py-0.5 font-mono text-[13px] text-zinc-100">
+                              {stream.streamKey}
+                            </code>
                           </td>
-                          <td style={tdStyle}>
-                            <span style={liveBadgeStyle}>
-                              <span style={liveDotStyle} />
+                          <td className="px-4 py-3 text-sm text-zinc-200">
+                            <span className="inline-flex items-center gap-1.5 rounded bg-emerald-500/15 px-2 py-0.5 text-xs font-semibold text-emerald-500">
+                              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
                               LIVE
                             </span>
                           </td>
-                          <td style={{ ...tdStyle, fontFamily: "'SF Mono', 'Cascadia Code', Consolas, monospace" }}>
-                            {stream.viewerCount || 0}
-                          </td>
-                          <td style={{ ...tdStyle, fontFamily: "'SF Mono', 'Cascadia Code', Consolas, monospace" }}>
+                          <td className="px-4 py-3 font-mono text-sm text-zinc-300">{stream.viewerCount || 0}</td>
+                          <td className="px-4 py-3 font-mono text-sm text-zinc-300">
                             {stream.startedAt ? formatDuration(stream.startedAt) : "-"}
                           </td>
                         </tr>
@@ -222,24 +230,24 @@ export default function AdminDashboard() {
               )}
             </section>
 
-            <section style={sectionStyle}>
-              <h2 style={sectionTitleStyle}>Informasi Server</h2>
-              <div style={infoGridStyle}>
-                <div style={infoItemStyle}>
-                  <span style={infoLabelStyle}>RTMP Ingest</span>
-                  <code style={infoValueStyle}>rtmp://localhost:1935/live</code>
+            <section className="mb-8">
+              <h2 className="mb-4 text-base font-semibold text-zinc-200">Informasi Server</h2>
+              <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                <div className="rounded-xl border border-zinc-800 bg-zinc-900 p-4">
+                  <span className="block text-xs uppercase tracking-[0.05em] text-zinc-400">RTMP Ingest</span>
+                  <code className="mt-2 block break-all rounded bg-zinc-800 px-2 py-1 font-mono text-sm text-zinc-200">rtmp://localhost:1935/live</code>
                 </div>
-                <div style={infoItemStyle}>
-                  <span style={infoLabelStyle}>HTTP Port</span>
-                  <code style={infoValueStyle}>8080</code>
+                <div className="rounded-xl border border-zinc-800 bg-zinc-900 p-4">
+                  <span className="block text-xs uppercase tracking-[0.05em] text-zinc-400">HTTP Port</span>
+                  <code className="mt-2 block rounded bg-zinc-800 px-2 py-1 font-mono text-sm text-zinc-200">8080</code>
                 </div>
-                <div style={infoItemStyle}>
-                  <span style={infoLabelStyle}>WebSocket Port</span>
-                  <code style={infoValueStyle}>8081</code>
+                <div className="rounded-xl border border-zinc-800 bg-zinc-900 p-4">
+                  <span className="block text-xs uppercase tracking-[0.05em] text-zinc-400">WebSocket Port</span>
+                  <code className="mt-2 block rounded bg-zinc-800 px-2 py-1 font-mono text-sm text-zinc-200">8081</code>
                 </div>
-                <div style={infoItemStyle}>
-                  <span style={infoLabelStyle}>FLV Stream</span>
-                  <code style={infoValueStyle}>:10080/live/{'{streamKey}'}.flv</code>
+                <div className="rounded-xl border border-zinc-800 bg-zinc-900 p-4">
+                  <span className="block text-xs uppercase tracking-[0.05em] text-zinc-400">FLV Stream</span>
+                  <code className="mt-2 block break-all rounded bg-zinc-800 px-2 py-1 font-mono text-sm text-zinc-200">:10080/live/{"{streamKey}"}.flv</code>
                 </div>
               </div>
             </section>
@@ -249,279 +257,3 @@ export default function AdminDashboard() {
     </div>
   );
 }
-
-const rootStyle: React.CSSProperties = {
-  display: "flex",
-  minHeight: "100vh",
-  background: "#0f0f0f",
-  color: "#e4e4e7",
-  fontFamily: "system-ui, -apple-system, sans-serif",
-};
-
-const sidebarStyle: React.CSSProperties = {
-  width: 240,
-  background: "#141414",
-  borderRight: "1px solid #27272a",
-  display: "flex",
-  flexDirection: "column",
-  padding: "20px 0",
-  position: "fixed",
-  top: 0,
-  left: 0,
-  bottom: 0,
-};
-
-const logoStyle: React.CSSProperties = {
-  display: "flex",
-  alignItems: "center",
-  gap: 10,
-  padding: "0 20px 20px",
-  borderBottom: "1px solid #27272a",
-  fontSize: 16,
-  fontWeight: 600,
-};
-
-const logoIconStyle: React.CSSProperties = {
-  color: "#22c55e",
-  fontSize: 18,
-};
-
-const navStyle: React.CSSProperties = {
-  display: "flex",
-  flexDirection: "column",
-  gap: 4,
-  padding: "16px 12px",
-  flex: 1,
-};
-
-const navItemStyle: React.CSSProperties = {
-  display: "flex",
-  alignItems: "center",
-  gap: 10,
-  padding: "10px 12px",
-  borderRadius: 6,
-  color: "#a1a1aa",
-  textDecoration: "none",
-  fontSize: 14,
-  transition: "background 0.15s, color 0.15s",
-};
-
-const navItemActiveStyle: React.CSSProperties = {
-  background: "#27272a",
-  color: "#e4e4e7",
-};
-
-const navIconStyle: React.CSSProperties = {
-  fontSize: 12,
-  opacity: 0.7,
-};
-
-const sidebarFooterStyle: React.CSSProperties = {
-  display: "flex",
-  alignItems: "center",
-  gap: 8,
-  padding: "16px 20px",
-  borderTop: "1px solid #27272a",
-};
-
-const statusDotStyle: React.CSSProperties = {
-  width: 8,
-  height: 8,
-  borderRadius: "50%",
-  background: "#22c55e",
-};
-
-const logoutBtnStyle: React.CSSProperties = {
-  padding: "4px 10px",
-  background: "transparent",
-  border: "1px solid #27272a",
-  borderRadius: 4,
-  color: "#71717a",
-  fontSize: 11,
-  cursor: "pointer",
-  fontFamily: "system-ui, -apple-system, sans-serif",
-};
-
-const mainStyle: React.CSSProperties = {
-  flex: 1,
-  marginLeft: 240,
-  padding: 32,
-};
-
-const headerStyle: React.CSSProperties = {
-  display: "flex",
-  justifyContent: "space-between",
-  alignItems: "flex-start",
-  marginBottom: 32,
-};
-
-const titleStyle: React.CSSProperties = {
-  fontSize: 24,
-  fontWeight: 600,
-  margin: 0,
-  color: "#fafafa",
-};
-
-const subtitleStyle: React.CSSProperties = {
-  fontSize: 14,
-  color: "#71717a",
-  margin: "4px 0 0",
-};
-
-const headerRightStyle: React.CSSProperties = {
-  display: "flex",
-  alignItems: "center",
-  gap: 12,
-};
-
-const timestampStyle: React.CSSProperties = {
-  fontSize: 12,
-  color: "#52525b",
-  fontFamily: "'SF Mono', 'Cascadia Code', Consolas, monospace",
-};
-
-const statsGridStyle: React.CSSProperties = {
-  display: "grid",
-  gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
-  gap: 16,
-  marginBottom: 32,
-};
-
-const statCardStyle: React.CSSProperties = {
-  background: "#18181b",
-  border: "1px solid #27272a",
-  borderRadius: 8,
-  padding: "20px",
-};
-
-const statLabelStyle: React.CSSProperties = {
-  fontSize: 12,
-  color: "#71717a",
-  textTransform: "uppercase" as const,
-  letterSpacing: "0.05em",
-  marginBottom: 8,
-};
-
-const statValueStyle: React.CSSProperties = {
-  fontSize: 28,
-  fontWeight: 600,
-  color: "#fafafa",
-  lineHeight: 1,
-};
-
-const statSubStyle: React.CSSProperties = {
-  fontSize: 12,
-  color: "#52525b",
-  marginTop: 8,
-};
-
-const sectionStyle: React.CSSProperties = {
-  marginBottom: 32,
-};
-
-const sectionTitleStyle: React.CSSProperties = {
-  fontSize: 16,
-  fontWeight: 600,
-  color: "#e4e4e7",
-  margin: "0 0 16px",
-};
-
-const emptyStateStyle: React.CSSProperties = {
-  display: "flex",
-  flexDirection: "column",
-  alignItems: "center",
-  justifyContent: "center",
-  padding: "48px 24px",
-  background: "#18181b",
-  border: "1px solid #27272a",
-  borderRadius: 8,
-  textAlign: "center",
-};
-
-const tableWrapperStyle: React.CSSProperties = {
-  background: "#18181b",
-  border: "1px solid #27272a",
-  borderRadius: 8,
-  overflow: "hidden",
-};
-
-const tableStyle: React.CSSProperties = {
-  width: "100%",
-  borderCollapse: "collapse",
-};
-
-const thStyle: React.CSSProperties = {
-  textAlign: "left",
-  padding: "12px 16px",
-  fontSize: 12,
-  color: "#71717a",
-  textTransform: "uppercase" as const,
-  letterSpacing: "0.05em",
-  borderBottom: "1px solid #27272a",
-  fontWeight: 500,
-};
-
-const trStyle: React.CSSProperties = {
-  borderBottom: "1px solid #27272a",
-};
-
-const tdStyle: React.CSSProperties = {
-  padding: "12px 16px",
-  fontSize: 14,
-};
-
-const codeStyle: React.CSSProperties = {
-  background: "#27272a",
-  padding: "2px 8px",
-  borderRadius: 4,
-  fontSize: 13,
-  fontFamily: "'SF Mono', 'Cascadia Code', Consolas, monospace",
-};
-
-const liveBadgeStyle: React.CSSProperties = {
-  display: "inline-flex",
-  alignItems: "center",
-  gap: 6,
-  padding: "2px 8px",
-  background: "rgba(34, 197, 94, 0.15)",
-  color: "#22c55e",
-  borderRadius: 4,
-  fontSize: 12,
-  fontWeight: 600,
-};
-
-const liveDotStyle: React.CSSProperties = {
-  width: 6,
-  height: 6,
-  borderRadius: "50%",
-  background: "#22c55e",
-};
-
-const infoGridStyle: React.CSSProperties = {
-  display: "grid",
-  gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
-  gap: 12,
-};
-
-const infoItemStyle: React.CSSProperties = {
-  display: "flex",
-  flexDirection: "column",
-  gap: 4,
-  padding: "12px 16px",
-  background: "#18181b",
-  border: "1px solid #27272a",
-  borderRadius: 8,
-};
-
-const infoLabelStyle: React.CSSProperties = {
-  fontSize: 12,
-  color: "#71717a",
-};
-
-const infoValueStyle: React.CSSProperties = {
-  fontSize: 14,
-  color: "#e4e4e7",
-  fontFamily: "'SF Mono', 'Cascadia Code', Consolas, monospace",
-  background: "none",
-  padding: 0,
-};

@@ -22,54 +22,52 @@ export default function LoginPage() {
   }
 
   return (
-    <div style={rootStyle}>
-      <div style={cardStyle}>
-        <div style={logoStyle}>
-          <span style={{ color: "#22c55e", fontSize: 24 }}>&#9654;</span>
-          <span style={{ fontSize: 20, fontWeight: 600, color: "#fafafa" }}>Broadcast</span>
+    <div className="flex h-screen w-screen items-center justify-center bg-zinc-950 px-4 text-zinc-100">
+      <div className="w-full max-w-sm rounded-2xl border border-zinc-800 bg-zinc-900/95 p-8 shadow-2xl shadow-black/30">
+        <div className="mb-2 flex items-center justify-center gap-2">
+          <span className="text-2xl text-emerald-500">&#9654;</span>
+          <span className="text-xl font-semibold text-zinc-50">Broadcast</span>
         </div>
 
-        <p style={{ color: "#71717a", fontSize: 14, margin: "0 0 24px", textAlign: "center" }}>
+        <p className="mb-6 text-center text-sm text-zinc-400">
           Masuk untuk menonton siaran
         </p>
 
         {error && (
-          <div style={errorStyle}>{error}</div>
+          <div className="mb-4 rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-400">
+            {error}
+          </div>
         )}
 
         <form onSubmit={handleSubmit}>
-          <div style={{ marginBottom: 16 }}>
-            <label style={labelStyle}>Username atau Email</label>
+          <div className="mb-4">
+            <label className="mb-1.5 block text-sm font-medium text-zinc-400">Username atau Email</label>
             <input
               type="text"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               placeholder="Masukkan username atau email"
               required
-              style={inputStyle}
+              className="w-full rounded-lg border border-zinc-800 bg-zinc-950 px-3 py-2.5 text-sm text-zinc-100 outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
             />
           </div>
 
-          <div style={{ marginBottom: 24 }}>
-            <label style={labelStyle}>Password</label>
+          <div className="mb-6">
+            <label className="mb-1.5 block text-sm font-medium text-zinc-400">Password</label>
             <input
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Masukkan password"
               required
-              style={inputStyle}
+              className="w-full rounded-lg border border-zinc-800 bg-zinc-950 px-3 py-2.5 text-sm text-zinc-100 outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
             />
           </div>
 
           <button
             type="submit"
             disabled={submitting}
-            style={{
-              ...buttonStyle,
-              opacity: submitting ? 0.6 : 1,
-              cursor: submitting ? "not-allowed" : "pointer",
-            }}
+            className="w-full rounded-lg bg-emerald-500 px-4 py-2.5 text-sm font-semibold text-zinc-950 transition hover:bg-emerald-400 disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:bg-emerald-500"
           >
             {submitting ? "Masuk..." : "Masuk"}
           </button>
@@ -78,73 +76,3 @@ export default function LoginPage() {
     </div>
   );
 }
-
-const rootStyle: React.CSSProperties = {
-  width: "100vw",
-  height: "100vh",
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-  background: "#0f0f0f",
-  fontFamily: "system-ui, -apple-system, sans-serif",
-};
-
-const cardStyle: React.CSSProperties = {
-  width: 360,
-  padding: "40px 32px",
-  background: "#18181b",
-  border: "1px solid #27272a",
-  borderRadius: 12,
-};
-
-const logoStyle: React.CSSProperties = {
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-  gap: 10,
-  marginBottom: 8,
-};
-
-const labelStyle: React.CSSProperties = {
-  display: "block",
-  fontSize: 13,
-  color: "#a1a1aa",
-  marginBottom: 6,
-  fontWeight: 500,
-};
-
-const inputStyle: React.CSSProperties = {
-  width: "100%",
-  padding: "10px 12px",
-  background: "#0f0f0f",
-  border: "1px solid #27272a",
-  borderRadius: 6,
-  color: "#e4e4e7",
-  fontSize: 14,
-  outline: "none",
-  boxSizing: "border-box",
-  fontFamily: "system-ui, -apple-system, sans-serif",
-};
-
-const buttonStyle: React.CSSProperties = {
-  width: "100%",
-  padding: "10px 16px",
-  background: "#22c55e",
-  border: "none",
-  borderRadius: 6,
-  color: "#000",
-  fontSize: 14,
-  fontWeight: 600,
-  cursor: "pointer",
-  fontFamily: "system-ui, -apple-system, sans-serif",
-};
-
-const errorStyle: React.CSSProperties = {
-  padding: "10px 12px",
-  background: "rgba(239, 68, 68, 0.15)",
-  border: "1px solid rgba(239, 68, 68, 0.3)",
-  borderRadius: 6,
-  color: "#ef4444",
-  fontSize: 13,
-  marginBottom: 16,
-};

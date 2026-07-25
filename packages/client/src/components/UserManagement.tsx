@@ -117,55 +117,55 @@ export default function UserManagement() {
   }
 
   if (loading) {
-    return <div style={{ padding: 24, color: "#71717a" }}>Memuat data pengguna...</div>;
+    return <div className="px-6 py-6 text-sm text-zinc-400">Memuat data pengguna...</div>;
   }
 
   return (
     <div>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
-        <h2 style={{ fontSize: 16, fontWeight: 600, color: "#e4e4e7", margin: 0 }}>
+      <div className="mb-5 flex items-center justify-between gap-4">
+        <h2 className="m-0 text-base font-semibold text-zinc-200">
           Pengguna ({users.length})
         </h2>
-        <button onClick={startCreate} style={createBtnStyle}>
+        <button onClick={startCreate} className="rounded-lg bg-emerald-500 px-3.5 py-2 text-sm font-semibold text-zinc-950 transition hover:bg-emerald-400">
           + Tambah Pengguna
         </button>
       </div>
 
       {showForm && (
-        <div style={formCardStyle}>
-          <h3 style={{ fontSize: 14, fontWeight: 600, color: "#e4e4e7", margin: "0 0 16px" }}>
+        <div className="mb-5 rounded-xl border border-zinc-800 bg-zinc-900 p-5">
+          <h3 className="mb-4 text-sm font-semibold text-zinc-200">
             {editingId ? "Edit Pengguna" : "Tambah Pengguna Baru"}
           </h3>
 
-          {error && <div style={errorStyle}>{error}</div>}
+          {error && <div className="mb-3 rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm text-red-400">{error}</div>}
 
           <form onSubmit={handleSubmit}>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 12 }}>
+            <div className="mb-3 grid gap-3 md:grid-cols-2">
               <div>
-                <label style={labelStyle}>Username</label>
+                <label className="mb-1 block text-xs font-medium text-zinc-400">Username</label>
                 <input
                   type="text"
                   value={form.username}
                   onChange={(e) => setForm({ ...form, username: e.target.value })}
                   required
-                  style={inputStyle}
+                  className="w-full rounded-lg border border-zinc-800 bg-zinc-950 px-3 py-2 text-sm text-zinc-100 outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
                 />
               </div>
               <div>
-                <label style={labelStyle}>Email</label>
+                <label className="mb-1 block text-xs font-medium text-zinc-400">Email</label>
                 <input
                   type="email"
                   value={form.email}
                   onChange={(e) => setForm({ ...form, email: e.target.value })}
                   required
-                  style={inputStyle}
+                  className="w-full rounded-lg border border-zinc-800 bg-zinc-950 px-3 py-2 text-sm text-zinc-100 outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
                 />
               </div>
             </div>
 
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 16 }}>
+            <div className="mb-4 grid gap-3 md:grid-cols-2">
               <div>
-                <label style={labelStyle}>
+                <label className="mb-1 block text-xs font-medium text-zinc-400">
                   Password {editingId && "(kosongkan jika tidak diubah)"}
                 </label>
                 <input
@@ -173,15 +173,15 @@ export default function UserManagement() {
                   value={form.password}
                   onChange={(e) => setForm({ ...form, password: e.target.value })}
                   required={!editingId}
-                  style={inputStyle}
+                  className="w-full rounded-lg border border-zinc-800 bg-zinc-950 px-3 py-2 text-sm text-zinc-100 outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
                 />
               </div>
               <div>
-                <label style={labelStyle}>Role</label>
+                <label className="mb-1 block text-xs font-medium text-zinc-400">Role</label>
                 <select
                   value={form.role}
                   onChange={(e) => setForm({ ...form, role: e.target.value as "admin" | "viewer" })}
-                  style={inputStyle}
+                  className="w-full rounded-lg border border-zinc-800 bg-zinc-950 px-3 py-2 text-sm text-zinc-100 outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
                 >
                   <option value="viewer">Viewer</option>
                   <option value="admin">Admin</option>
@@ -189,11 +189,11 @@ export default function UserManagement() {
               </div>
             </div>
 
-            <div style={{ display: "flex", gap: 8 }}>
-              <button type="submit" disabled={submitting} style={submitBtnStyle}>
+            <div className="flex gap-2">
+              <button type="submit" disabled={submitting} className="rounded-lg bg-emerald-500 px-4 py-2 text-sm font-semibold text-zinc-950 transition hover:bg-emerald-400 disabled:cursor-not-allowed disabled:opacity-60">
                 {submitting ? "Menyimpan..." : editingId ? "Simpan Perubahan" : "Buat Pengguna"}
               </button>
-              <button type="button" onClick={cancelForm} style={cancelBtnStyle}>
+              <button type="button" onClick={cancelForm} className="rounded-lg border border-zinc-800 px-4 py-2 text-sm text-zinc-400 transition hover:bg-zinc-800 hover:text-zinc-100">
                 Batal
               </button>
             </div>
@@ -201,44 +201,44 @@ export default function UserManagement() {
         </div>
       )}
 
-      <div style={tableWrapperStyle}>
-        <table style={tableStyle}>
+      <div className="overflow-hidden rounded-xl border border-zinc-800 bg-zinc-900">
+        <table className="w-full border-collapse">
           <thead>
             <tr>
-              <th style={thStyle}>Username</th>
-              <th style={thStyle}>Email</th>
-              <th style={thStyle}>Role</th>
-              <th style={thStyle}>Dibuat</th>
-              <th style={{ ...thStyle, textAlign: "right" }}>Aksi</th>
+              <th className="border-b border-zinc-800 px-4 py-3 text-left text-xs font-medium uppercase tracking-[0.05em] text-zinc-400">Username</th>
+              <th className="border-b border-zinc-800 px-4 py-3 text-left text-xs font-medium uppercase tracking-[0.05em] text-zinc-400">Email</th>
+              <th className="border-b border-zinc-800 px-4 py-3 text-left text-xs font-medium uppercase tracking-[0.05em] text-zinc-400">Role</th>
+              <th className="border-b border-zinc-800 px-4 py-3 text-left text-xs font-medium uppercase tracking-[0.05em] text-zinc-400">Dibuat</th>
+              <th className="border-b border-zinc-800 px-4 py-3 text-right text-xs font-medium uppercase tracking-[0.05em] text-zinc-400">Aksi</th>
             </tr>
           </thead>
           <tbody>
             {users.length === 0 ? (
               <tr>
-                <td colSpan={5} style={{ ...tdStyle, textAlign: "center", color: "#71717a" }}>
+                <td colSpan={5} className="px-4 py-4 text-center text-sm text-zinc-400">
                   Belum ada pengguna
                 </td>
               </tr>
             ) : (
               users.map((user) => (
-                <tr key={user.id} style={trStyle}>
-                  <td style={tdStyle}>
-                    <code style={codeStyle}>{user.username}</code>
+                <tr key={user.id} className="border-b border-zinc-800 last:border-b-0">
+                  <td className="px-4 py-3 text-sm text-zinc-200">
+                    <code className="rounded bg-zinc-800 px-1.5 py-0.5 font-mono text-[13px] text-zinc-100">{user.username}</code>
                   </td>
-                  <td style={tdStyle}>{user.email}</td>
-                  <td style={tdStyle}>
-                    <span style={user.role === "admin" ? adminBadgeStyle : viewerBadgeStyle}>
+                  <td className="px-4 py-3 text-sm text-zinc-300">{user.email}</td>
+                  <td className="px-4 py-3 text-sm">
+                    <span className={user.role === "admin" ? "inline-block rounded bg-amber-500/15 px-2 py-0.5 text-xs font-semibold text-amber-400" : "inline-block rounded bg-blue-500/15 px-2 py-0.5 text-xs font-semibold text-blue-400"}>
                       {user.role === "admin" ? "Admin" : "Viewer"}
                     </span>
                   </td>
-                  <td style={{ ...tdStyle, fontFamily: "'SF Mono', Consolas, monospace", fontSize: 13, color: "#71717a" }}>
+                  <td className="px-4 py-3 font-mono text-sm text-zinc-400">
                     {new Date(user.createdAt).toLocaleDateString("id-ID")}
                   </td>
-                  <td style={{ ...tdStyle, textAlign: "right" }}>
-                    <button onClick={() => startEdit(user)} style={editBtnStyle}>
+                  <td className="px-4 py-3 text-right">
+                    <button onClick={() => startEdit(user)} className="mr-2 rounded-md border border-zinc-800 px-2.5 py-1 text-xs text-zinc-400 transition hover:bg-zinc-800 hover:text-zinc-100">
                       Edit
                     </button>
-                    <button onClick={() => handleDelete(user.id, user.username)} style={deleteBtnStyle}>
+                    <button onClick={() => handleDelete(user.id, user.username)} className="rounded-md border border-red-500/30 px-2.5 py-1 text-xs text-red-400 transition hover:bg-red-500/10">
                       Hapus
                     </button>
                   </td>
@@ -251,159 +251,3 @@ export default function UserManagement() {
     </div>
   );
 }
-
-const createBtnStyle: React.CSSProperties = {
-  padding: "8px 14px",
-  background: "#22c55e",
-  border: "none",
-  borderRadius: 6,
-  color: "#000",
-  fontSize: 13,
-  fontWeight: 600,
-  cursor: "pointer",
-  fontFamily: "system-ui, -apple-system, sans-serif",
-};
-
-const formCardStyle: React.CSSProperties = {
-  padding: 20,
-  background: "#18181b",
-  border: "1px solid #27272a",
-  borderRadius: 8,
-  marginBottom: 20,
-};
-
-const labelStyle: React.CSSProperties = {
-  display: "block",
-  fontSize: 12,
-  color: "#71717a",
-  marginBottom: 4,
-};
-
-const inputStyle: React.CSSProperties = {
-  width: "100%",
-  padding: "8px 10px",
-  background: "#0f0f0f",
-  border: "1px solid #27272a",
-  borderRadius: 6,
-  color: "#e4e4e7",
-  fontSize: 13,
-  outline: "none",
-  boxSizing: "border-box" as const,
-  fontFamily: "system-ui, -apple-system, sans-serif",
-};
-
-const submitBtnStyle: React.CSSProperties = {
-  padding: "8px 16px",
-  background: "#22c55e",
-  border: "none",
-  borderRadius: 6,
-  color: "#000",
-  fontSize: 13,
-  fontWeight: 600,
-  cursor: "pointer",
-  fontFamily: "system-ui, -apple-system, sans-serif",
-};
-
-const cancelBtnStyle: React.CSSProperties = {
-  padding: "8px 16px",
-  background: "transparent",
-  border: "1px solid #27272a",
-  borderRadius: 6,
-  color: "#a1a1aa",
-  fontSize: 13,
-  cursor: "pointer",
-  fontFamily: "system-ui, -apple-system, sans-serif",
-};
-
-const tableWrapperStyle: React.CSSProperties = {
-  background: "#18181b",
-  border: "1px solid #27272a",
-  borderRadius: 8,
-  overflow: "hidden",
-};
-
-const tableStyle: React.CSSProperties = {
-  width: "100%",
-  borderCollapse: "collapse",
-};
-
-const thStyle: React.CSSProperties = {
-  textAlign: "left",
-  padding: "10px 16px",
-  fontSize: 12,
-  color: "#71717a",
-  textTransform: "uppercase" as const,
-  letterSpacing: "0.05em",
-  borderBottom: "1px solid #27272a",
-  fontWeight: 500,
-};
-
-const trStyle: React.CSSProperties = {
-  borderBottom: "1px solid #27272a",
-};
-
-const tdStyle: React.CSSProperties = {
-  padding: "10px 16px",
-  fontSize: 14,
-};
-
-const codeStyle: React.CSSProperties = {
-  background: "#27272a",
-  padding: "2px 6px",
-  borderRadius: 4,
-  fontSize: 13,
-  fontFamily: "'SF Mono', Consolas, monospace",
-};
-
-const adminBadgeStyle: React.CSSProperties = {
-  display: "inline-block",
-  padding: "2px 8px",
-  background: "rgba(234, 179, 8, 0.15)",
-  color: "#eab308",
-  borderRadius: 4,
-  fontSize: 12,
-  fontWeight: 600,
-};
-
-const viewerBadgeStyle: React.CSSProperties = {
-  display: "inline-block",
-  padding: "2px 8px",
-  background: "rgba(59, 130, 246, 0.15)",
-  color: "#3b82f6",
-  borderRadius: 4,
-  fontSize: 12,
-  fontWeight: 600,
-};
-
-const editBtnStyle: React.CSSProperties = {
-  padding: "4px 10px",
-  background: "transparent",
-  border: "1px solid #27272a",
-  borderRadius: 4,
-  color: "#a1a1aa",
-  fontSize: 12,
-  cursor: "pointer",
-  marginRight: 6,
-  fontFamily: "system-ui, -apple-system, sans-serif",
-};
-
-const deleteBtnStyle: React.CSSProperties = {
-  padding: "4px 10px",
-  background: "transparent",
-  border: "1px solid rgba(239, 68, 68, 0.3)",
-  borderRadius: 4,
-  color: "#ef4444",
-  fontSize: 12,
-  cursor: "pointer",
-  fontFamily: "system-ui, -apple-system, sans-serif",
-};
-
-const errorStyle: React.CSSProperties = {
-  padding: "8px 12px",
-  background: "rgba(239, 68, 68, 0.15)",
-  border: "1px solid rgba(239, 68, 68, 0.3)",
-  borderRadius: 6,
-  color: "#ef4444",
-  fontSize: 13,
-  marginBottom: 12,
-};

@@ -69,6 +69,6 @@ initDefaultAdmin();
 cleanupExpiredSessions();
 startRtmp();
 
-httpServer.listen(HTTP_PORT, () => {
-  console.log(`[HTTP] Server running on http://localhost:${HTTP_PORT}`);
+httpServer.listen(HTTP_PORT, "0.0.0.0", () => {
+  console.log(`[HTTP] Server running on http://0.0.0.0:${HTTP_PORT}`);
 });
