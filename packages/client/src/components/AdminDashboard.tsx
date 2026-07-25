@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import UserManagement from "./UserManagement";
 import StreamKeyManagement from "./StreamKeyManagement";
 import { useAuth } from "./AuthContext";
@@ -24,6 +24,108 @@ function formatUptime(ms: number): string {
 
 function formatDuration(startedAt: number): string {
   return formatUptime(Date.now() - startedAt);
+}
+
+function StreamPreview({ streamKey }: { streamKey: string }) {
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [status, setStatus] = useState<"connecting" | "playing" | "error">("connecting");
+  const [muted, setMuted] = useState(true);
+
+  useEffect(() => {
+    let flvPlayer: any = null;
+    let destroyed = false;
+
+    async function init() {
+      const flvjs = await import("flv.js");
+      if (destroyed) return;
+      if (!flvjs.default.isSupported() || !videoRef.current) return;
+
+      const isDev = window.location.port === "3000";
+      const flvUrl = isDev
+        ? `/live/${streamKey}.flv`
+        : `http://${window.location.hostname}:10080/live/${streamKey}.flv`;
+
+      flvPlayer = flvjs.default.createPlayer({
+        type: "flv",
+        isLive: true,
+        url: flvUrl,
+        cors: true,
+        hasAudio: true,
+        hasVideo: true,
+      });
+
+      flvPlayer.attachMediaElement(videoRef.current);
+      flvPlayer.load();
+
+      flvPlayer.on(flvjs.default.Events.ERROR, () => {
+        if (!destroyed) setStatus("error");
+      });
+
+      flvPlayer.on(flvjs.default.Events.STATISTICS_INFO, () => {
+        if (!destroyed && status !== "playing") setStatus("playing");
+      });
+
+      try {
+        await flvPlayer.play();
+      } catch {
+        // autoplay blocked, waiting for user interaction
+      }
+    }
+
+    init();
+    return () => {
+      destroyed = true;
+      flvPlayer?.unload();
+      flvPlayer?.detachMediaElement();
+    };
+  }, [streamKey]);
+
+  function toggleMute() {
+    if (!videoRef.current) return;
+    videoRef.current.muted = !videoRef.current.muted;
+    setMuted(videoRef.current.muted);
+  }
+
+  return (
+    <div className="relative overflow-hidden rounded-xl border border-zinc-800 bg-zinc-900">
+      <div className="flex items-center justify-between border-b border-zinc-800 px-4 py-2.5">
+        <div className="flex items-center gap-2">
+          <span className="text-xs uppercase tracking-wide text-zinc-400">Preview Siaran</span>
+          <span className="rounded bg-emerald-500/15 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-500">
+            {streamKey}
+          </span>
+        </div>
+        <button
+          onClick={toggleMute}
+          className="flex h-7 w-7 items-center justify-center rounded-md border border-zinc-700 bg-zinc-800 text-sm text-zinc-300 transition-colors hover:bg-zinc-700"
+          title={muted ? "Aktifkan suara" : "Matikan suara"}
+        >
+          {muted ? "\u{1F507}" : "\u{1F50A}"}
+        </button>
+      </div>
+      <div className="relative aspect-video w-full bg-black">
+        <video
+          ref={videoRef}
+          autoPlay
+          muted
+          className="h-full w-full object-contain"
+        />
+        {status === "connecting" && (
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="flex items-center gap-2 text-sm text-zinc-400">
+              <div className="h-4 w-4 animate-spin rounded-full border-2 border-zinc-600 border-t-zinc-300" />
+              Menghubungkan...
+            </div>
+          </div>
+        )}
+        {status === "error" && (
+          <div className="absolute inset-0 flex items-center justify-center">
+            <span className="text-sm text-zinc-500">Gagal memuat stream</span>
+          </div>
+        )}
+      </div>
+    </div>
+  );
 }
 
 function usePathname() {
@@ -200,6 +302,13 @@ export default function AdminDashboard() {
                 <div className="mt-2 text-xs text-zinc-500">OBS stream endpoint</div>
               </div>
             </div>
+
+            {/* Stream Preview */}
+            {liveStreams.length > 0 && (
+              <section className="mb-8">
+                <StreamPreview streamKey={liveStreams[0].streamKey} />
+              </section>
+            )}
 
             <section className="mb-8">
               <h2 className="mb-4 text-base font-semibold text-zinc-200">Siaran Aktif</h2>
