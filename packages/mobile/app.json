@@ -1,0 +1,24 @@
+{
+  "expo": {
+    "name": "Broadcast Viewer",
+    "slug": "broadcast-viewer",
+    "version": "1.0.0",
+    "orientation": "default",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "dark",
+    "splash": {
+      "backgroundColor": "#09090b"
+    },
+    "assetBundlePatterns": ["**/*"],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.broadcast.viewer"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#09090b"
+      },
+      "package": "com.broadcast.viewer"
+    }
+  }
+}

@@ -21,7 +21,8 @@ export default function ViewerManagement() {
   const wsRef = useRef<WebSocket | null>(null);
 
   useEffect(() => {
-    const wsHost = `ws://${window.location.hostname}:8081`;
+    const wsPort = import.meta.env.VITE_WS_PORT || "8081";
+    const wsHost = `ws://${window.location.hostname}:${wsPort}`;
     const ws = new WebSocket(`${wsHost}?role=admin`);
     wsRef.current = ws;
 

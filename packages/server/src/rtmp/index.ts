@@ -1,11 +1,15 @@
 import path from "path";
 import { fileURLToPath } from "url";
 import NodeMediaServer from "node-media-server";
-import { RTMP_PORT } from "@broadcast/shared";
 import { setStreamLive, setStreamEnded, broadcast } from "../services/stream.service.js";
 import { findStreamKeyByKey, updateLastUsedAt } from "../services/stream-key.service.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+const RTMP_PORT = Number(process.env.RTMP_PORT) || 1935;
+const HTTP_FLV_PORT = Number(process.env.HTTP_FLV_PORT) || 10080;
+const FFMPEG_PATH = process.env.FFMPEG_PATH || "/usr/bin/ffmpeg";
+const MEDIA_ROOT = process.env.MEDIA_ROOT || path.resolve(__dirname, "../../media");
 
 const config = {
   rtmp: {
@@ -16,11 +20,11 @@ const config = {
     ping_timeout: 60,
   },
   http: {
-    port: 10080,
+    port: HTTP_FLV_PORT,
     allow_origin: "*",
-    mediaroot: path.resolve(__dirname, "../../media"),
+    mediaroot: MEDIA_ROOT,
     trans: {
-      ffmpeg: "/usr/bin/ffmpeg",
+      ffmpeg: FFMPEG_PATH,
       tasks: [
         {
           app: "live",

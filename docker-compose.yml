@@ -1,0 +1,19 @@
+services:
+  server:
+    build: .
+    container_name: stream-broadcast
+    restart: unless-stopped
+    ports:
+      - "1935:1935"
+      - "8080:8080"
+      - "8081:8081"
+      - "10080:10080"
+    env_file: .env
+    volumes:
+      - ./data:/app/packages/server/data
+      - ./media:/app/packages/server/media
+    deploy:
+      resources:
+        limits:
+          cpus: "1"
+          memory: 1G

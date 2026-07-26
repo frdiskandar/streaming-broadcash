@@ -29,7 +29,8 @@ export default function Player({ streamKey, username }: PlayerProps) {
         return;
       }
 
-      const wsHost = `ws://${window.location.hostname}:8081`;
+      const wsPort = import.meta.env.VITE_WS_PORT || "8081";
+      const wsHost = `ws://${window.location.hostname}:${wsPort}`;
       const params = new URLSearchParams({ stream: streamKey });
       if (username) params.set("username", username);
       wsRef.current = new WebSocket(`${wsHost}?${params.toString()}`);
@@ -62,9 +63,10 @@ export default function Player({ streamKey, username }: PlayerProps) {
       wsRef.current.onerror = () => {};
 
       const isDev = window.location.port === "3000";
+      const httpFlvPort = import.meta.env.VITE_HTTP_FLV_PORT || "10080";
       const flvUrl = isDev
         ? `/live/${streamKey}.flv`
-        : `http://${window.location.hostname}:10080/live/${streamKey}.flv`;
+        : `http://${window.location.hostname}:${httpFlvPort}/live/${streamKey}.flv`;
 
       flvPlayer = flvjs.default.createPlayer({
         type: "flv",

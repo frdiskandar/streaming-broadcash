@@ -42,9 +42,10 @@ function StreamPreview({ streamKey }: { streamKey: string }) {
       if (!flvjs.default.isSupported() || !videoRef.current) return;
 
       const isDev = window.location.port === "3000";
+      const httpFlvPort = import.meta.env.VITE_HTTP_FLV_PORT || "10080";
       const flvUrl = isDev
         ? `/live/${streamKey}.flv`
-        : `http://${window.location.hostname}:10080/live/${streamKey}.flv`;
+        : `http://${window.location.hostname}:${httpFlvPort}/live/${streamKey}.flv`;
 
       flvPlayer = flvjs.default.createPlayer({
         type: "flv",

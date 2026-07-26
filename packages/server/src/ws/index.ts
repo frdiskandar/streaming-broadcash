@@ -1,5 +1,5 @@
 import { WebSocketServer, WebSocket } from "ws";
-import { WS_PORT, type WSMessage } from "@broadcast/shared";
+import type { WSMessage } from "@broadcast/shared";
 import { addViewer as addStreamViewer, removeViewer as removeStreamViewer, getStream, broadcast } from "../services/stream.service.js";
 import {
   addViewer,
@@ -12,6 +12,8 @@ import {
   sendToViewerById,
   getAllViewers,
 } from "../services/viewer.service.js";
+
+const WS_PORT = Number(process.env.WS_PORT) || 8081;
 
 const adminConnections = new Set<WebSocket>();
 

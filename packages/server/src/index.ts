@@ -1,8 +1,8 @@
+import "dotenv/config";
 import express from "express";
 import { createServer } from "http";
 import path from "path";
 import { fileURLToPath } from "url";
-import { HTTP_PORT } from "@broadcast/shared";
 
 import db from "./db.js";
 import authRoutes from "./routes/auth.js";
@@ -20,13 +20,17 @@ import type { User } from "@broadcast/shared";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
+const HTTP_PORT = Number(process.env.HTTP_PORT) || 8080;
+const DEFAULT_ADMIN_USERNAME = process.env.DEFAULT_ADMIN_USERNAME || "admin";
+const DEFAULT_ADMIN_PASSWORD = process.env.DEFAULT_ADMIN_PASSWORD || "admin123";
+
 // --- Default admin ---
 function initDefaultAdmin(): void {
   if (countUsers() === 0) {
-    const { hash, salt } = hashPassword("admin123");
+    const { hash, salt } = hashPassword(DEFAULT_ADMIN_PASSWORD);
     const admin: User = {
       id: generateId(),
-      username: "admin",
+      username: DEFAULT_ADMIN_USERNAME,
       email: "admin@broadcast.local",
       passwordHash: hash,
       passwordSalt: salt,
@@ -34,7 +38,7 @@ function initDefaultAdmin(): void {
       createdAt: Date.now(),
     };
     createUser(admin);
-    console.log("[AUTH] Default admin created: admin / admin123");
+    console.log(`[AUTH] Default admin created: ${DEFAULT_ADMIN_USERNAME} / ${DEFAULT_ADMIN_PASSWORD}`);
   }
 }
 

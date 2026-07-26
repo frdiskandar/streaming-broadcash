@@ -1,0 +1,10 @@
+node_modules
+dist
+.mimocode
+scripts
+.git
+*.pptx
+*.md
+*.log
+data
+media

@@ -1,7 +1,7 @@
 import crypto from "crypto";
 
-const SESSION_SECRET = crypto.randomBytes(32).toString("hex");
-const SESSION_MAX_AGE = 7 * 24 * 60 * 60 * 1000; // 7 days
+const SESSION_SECRET = process.env.SESSION_SECRET || crypto.randomBytes(32).toString("hex");
+const SESSION_MAX_AGE = Number(process.env.SESSION_MAX_AGE) || 7 * 24 * 60 * 60 * 1000; // 7 days
 const PBKDF2_ITERATIONS = 100000;
 const PBKDF2_KEYLEN = 64;
 const PBKDF2_DIGEST = "sha256";
